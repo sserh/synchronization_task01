@@ -16,13 +16,14 @@ public class Main {
             while (!Thread.interrupted()) {
                 synchronized (sizeToFreq) {
                     try {
-                        sizeToFreq.wait();
+                        sizeToFreq.wait(); //начинаем и ждём нотифая из потока вставки
                     } catch (InterruptedException e) {
                         throw new RuntimeException();
                     }
                     System.out.println("Самое частое количество повторений " + sizeToFreq.entrySet().stream()
                             .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getKey() + " (встретилось " + sizeToFreq.entrySet().stream()
                             .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getValue() + " раз)"); //выведем ключ и значение элемента с максимальным значением
+                    sizeToFreq.notify(); //когда всё сделали - генерируем нотифай для потока вставки
                 }
             }
         });
@@ -46,12 +47,18 @@ public class Main {
                         sizeToFreq.put(n, 1);
                     }
                     finalI.addAndGet(1); //итерируем счётчик вставок
-                    sizeToFreq.notify();
+                    System.out.println(n);
+                    sizeToFreq.notify(); //генерируем нотифай, уходим в поток считывания максимума
+                    try {
+                        sizeToFreq.wait(); //ждём, когда поток считывания максимума завершит свои дела и сгенерирует нотифай
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-                System.out.println(n);
             });
             thread.start(); // стартуем поток
-            thread.join(); //приостанавливаем выполнение основного потока до завершения текущего
+            thread.join(); // в этой ветке мы уже не должны сначала запускать все потоки, а потом их джойнить,
+            // здесь уже приходиться работать последовательно, чтобы вычитывать максимум на каждом шаге
         }
 
         currentCounterThread.interrupt();
