@@ -15,7 +15,7 @@ public class Main {
 
         for (int i = 0; i < NEEDEDNUMBER; i++) {
 
-            new Thread(() -> {
+            Thread thread = new Thread(() -> {
                 String str = generateRoute("RLRFR", 100);
                 int n = str.length() - str.replace("R", "").length(); //считаем количество символов R
 
@@ -28,17 +28,13 @@ public class Main {
                         sizeToFreq.put(n, 1);
                     }
                     finalI.addAndGet(1); //итерируем счётчик вставок
-                    if (finalI.get() == NEEDEDNUMBER) {
-                        sizeToFreq.notify(); //генерируем нотифай, когда все вставки в мапу уже закончены.
-                    }
                 }
                 System.out.println(n);
-
-            }).start();
+            });
+            thread.start(); // стартуем поток
+            thread.join(); //приостанавливаем выполнение основного потока до завершения текущего
         }
 
-        synchronized (sizeToFreq) {
-            sizeToFreq.wait(); //ждём нотифая, так как мы не можем начать операции по подсчёту, пока не отработают потоки заполнения мапы
             System.out.println("----------------------------------------------------------"); //разделитель
             System.out.println("Самое частое количество повторений " + sizeToFreq.entrySet().stream()
                     .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getKey() + " (встретилось " + sizeToFreq.entrySet().stream()
@@ -53,7 +49,6 @@ public class Main {
                  sizeToFreq.entrySet()) {
                 System.out.println("- " + entry.getKey() + " (" + entry.getValue() + " раз)"); // вывод остальных размеров (согласно примеру - сортировка их уже не нужна)
             }
-        }
     }
 
     public static String generateRoute(String letters, int length) {
