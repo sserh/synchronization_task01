@@ -11,6 +11,24 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
+
+        Thread currentCounterThread = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                synchronized (sizeToFreq) {
+                    try {
+                        sizeToFreq.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException();
+                    }
+                    System.out.println("Самое частое количество повторений " + sizeToFreq.entrySet().stream()
+                            .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getKey() + " (встретилось " + sizeToFreq.entrySet().stream()
+                            .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getValue() + " раз)"); //выведем ключ и значение элемента с максимальным значением
+                }
+            }
+        });
+
+        currentCounterThread.start();
+
         AtomicInteger finalI = new AtomicInteger(); //счётчик количества вставок
 
         for (int i = 0; i < NEEDEDNUMBER; i++) {
@@ -28,6 +46,7 @@ public class Main {
                         sizeToFreq.put(n, 1);
                     }
                     finalI.addAndGet(1); //итерируем счётчик вставок
+                    sizeToFreq.notify();
                 }
                 System.out.println(n);
             });
@@ -35,12 +54,11 @@ public class Main {
             thread.join(); //приостанавливаем выполнение основного потока до завершения текущего
         }
 
-            System.out.println("----------------------------------------------------------"); //разделитель
-            System.out.println("Самое частое количество повторений " + sizeToFreq.entrySet().stream()
-                    .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getKey() + " (встретилось " + sizeToFreq.entrySet().stream()
-                    .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getValue() + " раз)"); //выведем ключ и значение элемента с максимальным значением
+        currentCounterThread.interrupt();
 
-            sizeToFreq.remove(sizeToFreq.entrySet().stream()
+        //System.out.println("----------------------------------------------------------"); //разделитель
+
+/*            sizeToFreq.remove(sizeToFreq.entrySet().stream()
                     .max(Map.Entry.<Integer, Integer>comparingByValue()).get().getKey()); //удалим первый (с максимальным значением) элемент
 
             System.out.println("Другие размеры:");
@@ -48,7 +66,7 @@ public class Main {
             for (Map.Entry<Integer, Integer> entry:
                  sizeToFreq.entrySet()) {
                 System.out.println("- " + entry.getKey() + " (" + entry.getValue() + " раз)"); // вывод остальных размеров (согласно примеру - сортировка их уже не нужна)
-            }
+            }*/
     }
 
     public static String generateRoute(String letters, int length) {
