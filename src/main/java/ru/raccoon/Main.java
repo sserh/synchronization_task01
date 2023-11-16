@@ -1,15 +1,12 @@
 package ru.raccoon;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
     static final int NEEDEDNUMBER = 1000; //нужное по задаче количество строк
 
     public static void main(String[] args) throws InterruptedException {
-
-        AtomicInteger finalI = new AtomicInteger(); //счётчик количества вставок
 
         List<Thread> threadList = new ArrayList<>();
 
@@ -27,7 +24,6 @@ public class Main {
                     } else {
                         sizeToFreq.put(n, 1);
                     }
-                    finalI.addAndGet(1); //итерируем счётчик вставок
                 }
                 System.out.println(n);
             });
