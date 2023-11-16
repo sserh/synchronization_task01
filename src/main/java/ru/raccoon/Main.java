@@ -3,7 +3,6 @@ package ru.raccoon;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
     public static final Map<Integer, Integer> sizeToFreq = new HashMap<>();
@@ -30,8 +29,6 @@ public class Main {
 
         currentCounterThread.start();
 
-        AtomicInteger finalI = new AtomicInteger(); //счётчик количества вставок
-
         for (int i = 0; i < NEEDEDNUMBER; i++) {
 
             Thread thread = new Thread(() -> {
@@ -46,7 +43,6 @@ public class Main {
                     } else {
                         sizeToFreq.put(n, 1);
                     }
-                    finalI.addAndGet(1); //итерируем счётчик вставок
                     System.out.println(n);
                     sizeToFreq.notify(); //генерируем нотифай, уходим в поток считывания максимума
                     try {
