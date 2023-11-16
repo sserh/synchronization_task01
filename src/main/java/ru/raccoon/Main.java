@@ -1,8 +1,6 @@
 package ru.raccoon;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main {
@@ -12,6 +10,8 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
 
         AtomicInteger finalI = new AtomicInteger(); //счётчик количества вставок
+
+        List<Thread> threadList = new ArrayList<>();
 
         for (int i = 0; i < NEEDEDNUMBER; i++) {
 
@@ -32,7 +32,12 @@ public class Main {
                 System.out.println(n);
             });
             thread.start(); // стартуем поток
-            thread.join(); //приостанавливаем выполнение основного потока до завершения текущего
+            threadList.add(thread); // все потоки помещаем в список
+        }
+
+        for (Thread thread:
+             threadList) {
+            thread.join(); //приостанавливаем основной поток до завершения всех потоков из листа
         }
 
             System.out.println("----------------------------------------------------------"); //разделитель
